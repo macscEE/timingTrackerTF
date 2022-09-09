@@ -23,8 +23,8 @@ void setup()
 
   SPI.begin();
   radio.begin();
-  network.begin(90, nodeTX3);
-  radio.setDataRate(RF24_250KBPS);  
+  network.begin(124, nodeTX3);
+  radio.setDataRate(RF24_250KBPS);
   radio.startListening();
 }
 

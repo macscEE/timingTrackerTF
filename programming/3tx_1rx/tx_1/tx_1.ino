@@ -23,7 +23,7 @@ void setup()
 
   SPI.begin();
   radio.begin();
-  network.begin(90, nodeTX1);
+  network.begin(124, nodeTX1);
   radio.setDataRate(RF24_250KBPS);  
   radio.startListening();
 }
@@ -44,7 +44,7 @@ void loop()
   }
   else
   {
-    flag = false;  //Usato come antirimbalzo
+    flag = false;  //Debounce
   }
 }
 

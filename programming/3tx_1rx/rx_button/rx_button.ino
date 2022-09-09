@@ -30,7 +30,7 @@ void setup()
 
   SPI.begin();
   radio.begin();
-  network.begin(90, nodeRX);  //canale, indirizzo nodo
+  network.begin(124, nodeRX);  //canale, indirizzo nodo
   radio.setDataRate(RF24_250KBPS);
   radio.startListening();
   inTime = millis();
@@ -47,16 +47,15 @@ void loop()
     network.read(header, &dataReceived, sizeof(dataReceived));
     switch (dataReceived)
     {
-      case 1: Serial.println("Inviato da TX1");
+      case 1: Serial.println("From TX1");
         break;
-      case 2: Serial.println("Inviato da TX2");
+      case 2: Serial.println("From TX2");
         break;
-      case 3: Serial.println("Inviato da TX3");
+      case 3: Serial.println("From TX3");
         break;
-      default: Serial.println("Errore");
+      default: Serial.println("Error");
         break;
     }
-    //getTime();
   }
 }
 
