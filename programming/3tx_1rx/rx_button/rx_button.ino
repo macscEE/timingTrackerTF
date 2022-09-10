@@ -76,7 +76,7 @@ void getTime()
 }
  
 String s; 
-String s1;
+String s2;
 void t1()
 {
   tempTime = inTime;
