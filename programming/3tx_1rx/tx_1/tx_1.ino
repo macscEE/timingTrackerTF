@@ -11,8 +11,8 @@
 
 RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
 RF24Network network(radio);
-const uint16_t nodeTX1 = 01;
-const uint16_t nodeRX = 00;
+const uint16_t nodeTX1 = 1;
+const uint16_t nodeRX = 0;
   
 const int dataToSend = 1;
 

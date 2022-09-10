@@ -11,7 +11,7 @@
 
 RF24 radio(CE_PIN, CSN_PIN);
 RF24Network network(radio);
-const uint16_t nodeRX = 00;
+const uint16_t nodeRX = 0;
 
 
 int dataReceived; // this must match dataToSend in the TX
@@ -21,6 +21,7 @@ bool newData = false;
 int count = 0;  //Conteggio pressioni pulsante
 long inTime = 0;
 long cuTime = 0;
+long tempTime;
 //===========
 
 void setup()
@@ -34,6 +35,7 @@ void setup()
   radio.setDataRate(RF24_250KBPS);
   radio.startListening();
   inTime = millis();
+
 }
 
 //=============
@@ -48,73 +50,79 @@ void loop()
     switch (dataReceived)
     {
       case 1: Serial.println("From TX1");
+        count = 1;
         break;
       case 2: Serial.println("From TX2");
-        break;
-      case 3: Serial.println("From TX3");
+        count = 2;
         break;
       default: Serial.println("Error");
         break;
     }
   }
+  getTime();
 }
 
 //==============
-long tempMill, tempSec, tempTime;
+
 void getTime()
 {
-  if (count == 0)
+  switch (count)
   {
-    cuTime = millis();
-    long rslt = (cuTime - inTime);
-    long mills = (rslt % 1000);
-    long seconds = (rslt / 1000);
-    if (seconds > 99)
-      seconds = 99;
-    Serial.print("Tempo 1° parz.: ");
-    Serial.print(seconds);
-    Serial.print(".");
-    Serial.println(mills);
-    tempMill = mills;
-    tempSec = seconds;
-    tempTime = cuTime;
-    count++;
+    case 1: t1();
+      break;
+    case 2: t2();
+      break;
   }
+}
+ 
+void t1()
+{
+  tempTime = inTime;
+  cuTime = millis();
+  long rslt = (cuTime - tempTime);
+  long mills = (rslt % 1000);
+  long seconds = (rslt / 1000);
+  if (seconds > 99)
+    seconds = 99;
+  if (mills < 100)
+    s = "0" + mills;
+    
+  Serial.print("Tempo 1° parz.: ");
+  Serial.print(seconds);
+  Serial.print(".");
+  Serial.println(s);
+  tempTime = cuTime;
+  count = 0;
+}
 
-  if(count == 1)
-  {
-    cuTime = millis();
-    long rslt = (tempTime - cuTime);
-    long mills = (rslt % 1000);
-    long seconds = (rslt / 1000);
-    if (seconds > 99)
-      seconds = 99;
-    Serial.print("Tempo 2° parz.: ");
-    Serial.print(seconds);
-    Serial.print(".");
-    Serial.println(mills);
-    tempMill = mills;
-    tempSec = seconds;
-    tempTime = cuTime;
-    count++;
-  }
+void t2()
+{
+  cuTime = millis();
+  long rslt = (cuTime - tempTime);
+  long mills = (rslt % 1000);
+  long seconds = (rslt / 1000);
+  if (mills < 100)
+    s = "0" + mills;
+  if (seconds > 99)
+    seconds = 99;
 
-  if(count == 2)
-  {
-    cuTime = millis();
-    long rslt = (tempTime - cuTime);
-    long mills = (rslt % 1000);
-    long seconds = (rslt / 1000);
-    if (seconds > 99)
-      seconds = 99;
-    Serial.print("Tempo 3° parz.: ");
-    Serial.print(seconds);
-    Serial.print(".");
-    Serial.println(mills);
-    tempMill = mills;
-    tempSec = seconds;
-    tempTime = cuTime;
-    count = 0;
-  }
+  Serial.print("Tempo 2° parz.: ");
+  Serial.print(seconds);
+  Serial.print(".");
+  Serial.println(s);
 
+  long rsltTot = (cuTime - inTime);
+  long millsTot = (rsltTot % 1000);
+  long secondsTot = (rsltTot / 1000);
+  if (millsTot < 100)
+    s = "0" + millsTot;
+  if (secondsTot > 99)
+    secondsTot = 99;
+
+  Serial.print("Totale: ");
+  Serial.print(secondsTot);
+  Serial.print(".");
+  Serial.println(s);
+  tempTime = cuTime;
+  count = 0;
 }
