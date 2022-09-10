@@ -62,7 +62,7 @@ void loop()
   getTime();
 }
 
-//==============
+//Funzioni di appoggio
 
 void getTime()
 {
@@ -75,6 +75,7 @@ void getTime()
   }
 }
  
+String s; 
 void t1()
 {
   tempTime = inTime;
