@@ -6,6 +6,7 @@
 #include <RF24.h>
 #include <RF24Network.h>
 
+#define startButton 2
 #define CE_PIN   9
 #define CSN_PIN 10
 
@@ -16,7 +17,7 @@ const uint16_t nodeRX = 0;
 
 int dataReceived; // this must match dataToSend in the TX
 //invio un int così dal numero so chi lo ha inviato
-bool newData = false;
+bool done = false;
 
 int count = 0;  //Conteggio pressioni pulsante
 long inTime = 0;
@@ -27,46 +28,47 @@ long tempTime;
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("SimpleRx Starting");
 
   SPI.begin();
   radio.begin();
   network.begin(124, nodeRX);  //canale, indirizzo nodo
   radio.setDataRate(RF24_250KBPS);
-  radio.startListening();
-  inTime = millis();
+  //inTime = millis();
 
+  pinMode(startButton, INPUT);
 }
 
 //=============
 
 void loop()
 {
+  while(!done)
+  {
+    if(digitalRead(startButton) == LOW)
+    {
+      done = true;
+      inTime = millis();
+      Serial.println("Partenza cronometro");
+    }
+  }
+  radioReading();
+  getTime();
+}
+
+//Funzioni di appoggio
+void radioReading()
+{
   network.update();
   while (network.available()) //Non vi entra se non vi sono dati
   {
     RF24NetworkHeader header;
     network.read(header, &dataReceived, sizeof(dataReceived));
-    switch (dataReceived)
-    {
-      case 1: Serial.println("From TX1");
-        count = 1;
-        break;
-      case 2: Serial.println("From TX2");
-        count = 2;
-        break;
-      default: Serial.println("Error");
-        break;
-    }
   }
-  getTime();
 }
-
-//Funzioni di appoggio
 
 void getTime()
 {
-  switch (count)
+  switch (dataReceived)
   {
     case 1: t1();
       break;
@@ -74,9 +76,9 @@ void getTime()
       break;
   }
 }
- 
-String s; 
-String s2;
+
+String empty = String();  //Creo un oggetto stringa vuota
+String s = String();  //di appoggio
 void t1()
 {
   tempTime = inTime;
@@ -84,17 +86,24 @@ void t1()
   long rslt = (cuTime - tempTime);
   long mills = (rslt % 1000);
   long seconds = (rslt / 1000);
+  s = empty + mills;  //Creo una stringa che mi serve in caso debba aggiungere uno "0" ai millesimi
+
   if (seconds > 99)
     seconds = 99;
   if (mills < 100)
-    s = "0" + mills;
+  {
+    s = "0" + s;
+    if(mills < 10)
+      s = "0" + s;  //Aggiungo un altro zero se è minore di 10, tipo "005"
+  }
     
+  
+
   Serial.print("Tempo 1° parz.: ");
   Serial.print(seconds);
-  Serial.print(".");
-  Serial.println(s);
+  Serial.println("." + s);
   tempTime = cuTime;
-  count = 0;
+  dataReceived = 0;
 }
 
 void t2()
@@ -103,28 +112,31 @@ void t2()
   long rslt = (cuTime - tempTime);
   long mills = (rslt % 1000);
   long seconds = (rslt / 1000);
-  if (mills < 100)
-    s = "0" + mills;
+  s = empty + mills;
+
   if (seconds > 99)
     seconds = 99;
+  if (mills < 100)
+    s = "0" + s;
 
   Serial.print("Tempo 2° parz.: ");
   Serial.print(seconds);
-  Serial.print(".");
-  Serial.println(s);
+  Serial.println("." + s);
 
   long rsltTot = (cuTime - inTime);
   long millsTot = (rsltTot % 1000);
   long secondsTot = (rsltTot / 1000);
+  s = empty + millsTot;
+
   if (millsTot < 100)
-    s = "0" + millsTot;
+    s = "0" + s;
   if (secondsTot > 99)
     secondsTot = 99;
 
   Serial.print("Totale: ");
   Serial.print(secondsTot);
-  Serial.print(".");
-  Serial.println(s);
+  Serial.println("." + s);
   tempTime = cuTime;
-  count = 0;
+  dataReceived = 0;
+  done = false; //Faccio ripartire la procedura di partenza
 }
