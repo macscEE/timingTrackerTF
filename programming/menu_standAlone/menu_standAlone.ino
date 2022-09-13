@@ -4,8 +4,8 @@
  
 #include <LiquidCrystal_I2C.h>
 
-#define buttonScor 2
-#define buttonOK 7
+#define buttonScor 3
+#define buttonOK 4
 
 #define led1 3
 

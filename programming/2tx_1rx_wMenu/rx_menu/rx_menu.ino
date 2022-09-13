@@ -5,10 +5,15 @@
 #include <SPI.h>
 #include <RF24.h>
 #include <RF24Network.h>
+#include <LiquidCrystal_I2C.h>
 
 #define startButton 2
 #define CE_PIN   9
 #define CSN_PIN 10
+
+//For LCD
+#define buttonScor 3
+#define buttonOK 4
 
 RF24 radio(CE_PIN, CSN_PIN);
 RF24Network network(radio);
@@ -23,7 +28,9 @@ bool done = false;  //invio un int così dal numero so chi lo ha inviato
 long inTime = 0;
 long cuTime = 0;
 long tempTime;
-//===========
+
+bool flag = true; //Debounce button LCD
+int count = 0;  //Conta le pressioni del pulsante e quindi i vari programmi del menu
 
 void setup()
 {
@@ -36,6 +43,44 @@ void setup()
   //inTime = millis();
 
   pinMode(startButton, INPUT);
+
+  //For LCD
+  pinMode(buttonScor, INPUT);
+  pinMode(buttonOK, INPUT);
+  lcd.begin(16, 2);
+  lcd.backlight();  //accendo retroilluminazione
+  // Print a message to the LCD.
+  lcd.print("Benvenuto!");
+  delay(1000);
+  lcd.clear();
+  lcd.print("Seleziona il");
+  lcd.setCursor(1, 1);
+  lcd.print("programma");
+  delay(500);
+  lcd.clear();
+  while (flag)
+  {
+    if (digitalRead(buttonScor) == LOW)
+    {
+      count++;
+      lcd.clear();  //Cambia il programma quindi cancello schermo per leggere
+      if (count == 2)
+        count = 0;
+    }
+    switch (count)
+    { //Trova un modo di eseguire una sola funzione nel loop, tipo il frameBuffer del progetto di quinta
+      case 0: oneTime();
+        break;
+      case 1: twoTime();
+        break;
+      default:
+        break;
+    }
+
+    if (digitalRead(buttonOK) == LOW)
+    {
+      flag = false;
+  }
 }
 
 //=============
@@ -57,6 +102,23 @@ void loop()
 }
 
 //Funzioni di appoggio
+
+void oneTime()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("Singola");
+  lcd.setCursor(1, 0);
+  lcd.print("fotocellula");
+}
+
+void twoTime()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("Doppia");
+  lcd.setCursor(1, 0);
+  lcd.print("fotocellula");
+}
+
 
 void sendData() {
 
