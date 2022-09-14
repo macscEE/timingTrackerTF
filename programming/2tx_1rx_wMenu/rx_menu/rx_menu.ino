@@ -12,8 +12,10 @@
 #define CSN_PIN 10
 
 //For LCD
-#define buttonScor 3
+#define buttonSCOR 3
 #define buttonOK 4
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 RF24 radio(CE_PIN, CSN_PIN);
 RF24Network network(radio);
@@ -31,6 +33,7 @@ long tempTime;
 
 bool flag = true; //Debounce button LCD
 int count = 0;  //Conta le pressioni del pulsante e quindi i vari programmi del menu
+int foto; //per selezionare che fotocellula usare nel caso se ne usi una sola
 
 void setup()
 {
@@ -45,22 +48,22 @@ void setup()
   pinMode(startButton, INPUT);
 
   //For LCD
-  pinMode(buttonScor, INPUT);
+  pinMode(buttonSCOR, INPUT);
   pinMode(buttonOK, INPUT);
   lcd.begin(16, 2);
   lcd.backlight();  //accendo retroilluminazione
   // Print a message to the LCD.
   lcd.print("Benvenuto!");
-  delay(1000);
+  delay(1500);
   lcd.clear();
   lcd.print("Seleziona il");
-  lcd.setCursor(1, 1);
+  lcd.setCursor(0, 1);
   lcd.print("programma");
-  delay(500);
+  delay(1500);
   lcd.clear();
   while (flag)
   {
-    if (digitalRead(buttonScor) == LOW)
+    if (digitalRead(buttonSCOR) == LOW)
     {
       count++;
       lcd.clear();  //Cambia il programma quindi cancello schermo per leggere
@@ -68,19 +71,82 @@ void setup()
         count = 0;
     }
     switch (count)
-    { //Trova un modo di eseguire una sola funzione nel loop, tipo il frameBuffer del progetto di quinta
+    {
       case 0: oneTime();
         break;
       case 1: twoTime();
-        break;
-      default:
         break;
     }
 
     if (digitalRead(buttonOK) == LOW)
     {
+      if (count == 1)
+      {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Posizionare le");
+        lcd.setCursor(0, 1);
+        lcd.print("fotocellule");
+        delay(3000);
+        lcd.clear();
+        while (digitalRead(buttonOK) == HIGH)
+        {
+          lcd.setCursor(0, 0);
+          lcd.print("Premi OK");
+          lcd.setCursor(0, 1);
+          lcd.print("per avanzare");
+        }
+      }
+
+
+      if (count == 0)
+      {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Selezionare");
+        lcd.setCursor(0, 1);
+        lcd.print("fotocellula");
+        delay(1500);
+        lcd.clear();
+        foto = 0;  //Variabile temporanea di conteggio
+        while (digitalRead(buttonOK) == HIGH)
+        {
+          if (digitalRead(buttonSCOR) == LOW)
+          {
+            foto++;
+            lcd.clear();
+          }
+          if (foto == 2)
+            foto = 0;
+
+          if (foto == 0)
+          {
+            lcd.setCursor(0, 0);
+            lcd.print("Fotocellula");
+            lcd.setCursor(0, 1);
+            lcd.print("0");
+          }
+
+          if (foto == 1)
+          {
+            lcd.setCursor(0, 0);
+            lcd.print("Fotocellula");
+            lcd.setCursor(0, 1);
+            lcd.print("1");
+          }
+
+        }
+      }
+
       flag = false;
+    }
   }
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Premere START");
+  lcd.setCursor(0, 1);
+  lcd.print("per iniziare");
 }
 
 //=============
@@ -93,8 +159,12 @@ void loop()
     {
       done = true;
       inTime = millis();
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Acquisisco..");
       Serial.println("Partenza cronometro");
       sendData();
+
     }
   }
   radioReading();
@@ -107,7 +177,7 @@ void oneTime()
 {
   lcd.setCursor(0, 0);
   lcd.print("Singola");
-  lcd.setCursor(1, 0);
+  lcd.setCursor(0, 1);
   lcd.print("fotocellula");
 }
 
@@ -115,7 +185,7 @@ void twoTime()
 {
   lcd.setCursor(0, 0);
   lcd.print("Doppia");
-  lcd.setCursor(1, 0);
+  lcd.setCursor(0, 1);
   lcd.print("fotocellula");
 }
 
