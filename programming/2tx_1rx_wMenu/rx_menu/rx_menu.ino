@@ -29,9 +29,9 @@ bool startSend = true; // invio quando voglio iniziare far attivare i TX
 bool done = false; // invio un int così dal numero so chi lo ha inviato
 long inTime = 0;
 long cuTime = 0;
-long tempTime;
+//long tempTime;
 
-bool flag = true; // Debounce button LCD
+bool flag = true;
 int count = 0;    // Conta le pressioni del pulsante e quindi i vari programmi del menu
 int foto;         // per selezionare che fotocellula usare nel caso se ne usi una sola
 
@@ -72,12 +72,12 @@ void setup()
     }
     switch (count)
     {
-    case 0:
-      oneTime();
-      break;
-    case 1:
-      twoTime();
-      break;
+      case 0:
+        oneTime();
+        break;
+      case 1:
+        twoTime();
+        break;
     }
 
     if (digitalRead(buttonOK) == LOW)
@@ -156,13 +156,13 @@ void loop()
   {
     if (digitalRead(startButton) == LOW)
     {
-      done = true;
       inTime = millis();
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Acquisisco..");
       Serial.println("Partenza cronometro");
       sendData();
+      done = true;
     }
   }
   radioReading();
@@ -210,105 +210,103 @@ void getTime()
 {
   switch (dataReceived)
   {
-  case 1:
-    t1();
-    break;
-  case 2:
-    t2();
-    break;
+    case 1:
+      t1();
+      break;
+    case 2:
+      t2();
+      break;
   }
 }
 
 String empty = String(); // Creo un oggetto stringa vuota
-String sd = String();     // Dove metto le cifre dopo la virgola
-String si = String();            // cifre prima della virgola
+String sd = String();    // Dove metto le cifre dopo la virgola
+String si = String();    // cifre prima della virgola
 void t1()
 {
   if (count == 0)
   {
     if (foto == 0)
     {
-      tempTime = inTime;
-      timeCalc();
-      Serial.println("Tempo: ");
-      Serial.print(si);
-      Serial.println("." + sd);
+      //tempTime = inTime;
+      timeCalc(inTime);
+      Serial.println("Tempo: " + si + "." + sd);
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Tempo: " + si + "." + sd);
+      lcd.setCursor(0, 1);
+      lcd.print("OK per reset");
+      while (digitalRead(buttonOK) == HIGH)
+      {
+        //Aspetto che venga premuto il pulsante
+      }
+
+      done = false; // Riazzero la procedura dato che devo prendere solo un tempo
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Premere START");
+      lcd.setCursor(0, 1);
+      lcd.print("per iniziare");
+    }
+  }
+  else
+  {
+    //tempTime = inTime;
+    timeCalc(inTime);
+    Serial.println("Tempo 1° parz.: " + si + "." + sd);
+    //tempTime = cuTime;
+    dataReceived = 0;
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("T1: " + si + "." + sd);
+  }
+}
+
+
+void t2()
+{
+  if (count == 0)
+  {
+    if (foto == 1)
+    {
+      //tempTime = inTime;
+      timeCalc(inTime);
+      Serial.println("Tempo: " + si + "." + sd);
       lcd.clear();
       while (digitalRead(buttonOK) == HIGH)
       {
-        lcd.setCursor(0,0);
-        lcd.print("Tempo: ");
-        lcd.print(si);
-        Serial.println("." + sd);
-        lcd.setCursor(0,0);
-        lcd.print("OK per reset")
+        lcd.setCursor(0, 0);
+        lcd.print("Tempo: " + si + "." + sd);
+        lcd.setCursor(0, 1);
+        lcd.print("OK per reset");
       }
-
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Premere START");
+      lcd.setCursor(0, 1);
+      lcd.print("per iniziare");
       done = false; // Riazzero la procedura dato che devo prendere solo un tempo
     }
   }
   else
   {
-    tempTime = inTime;
-    timeCalc();
-    Serial.println("Tempo 1° parz.: " + si + "." + sd);
-    tempTime = cuTime;
+    timeCalc(cuTime);
+    Serial.println("Tempo 2° parz.: " + si + "." + sd);
+    timeCalc(inTime);
+    Serial.println("Totale: " + si + "." + sd);
+    //tempTime = cuTime;
     dataReceived = 0;
-
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("T1: " + si + "." + sd);
+    done = false; // Faccio ripartire la procedura di partenza
   }
 }
 
-//14.09 -> Ancora da sistemare il t2
-void t2()
+void timeCalc(long tempTime)
 {
   cuTime = millis();
   long rslt = (cuTime - tempTime);
-  long mills = (rslt % 1000);
-  long seconds = (rslt / 1000);
-  s = empty + mills;
-
-  if (seconds > 99)
-    seconds = 99;
-  if (mills < 100)
-  {
-    s = "0" + s;
-    if (mills < 10)
-      s = "0" + s; // Aggiungo un altro zero se è minore di 10, tipo "005"
-  }
-
-  Serial.print("Tempo 2° parz.: ");
-  Serial.print(seconds);
-  Serial.println("." + s);
-
-  long rsltTot = (cuTime - inTime);
-  long millsTot = (rsltTot % 1000);
-  long secondsTot = (rsltTot / 1000);
-  s = empty + millsTot;
-
-  if (secondsTot > 99)
-    secondsTot = 99;
-  if (millsTot < 100)
-  {
-    s = "0" + s;
-    if (millsTot < 10)
-      s = "0" + s; // Aggiungo un altro zero se è minore di 10, tipo "005"
-  }
-
-  Serial.print("Totale: ");
-  Serial.print(secondsTot);
-  Serial.println("." + s);
-  tempTime = cuTime;
-  dataReceived = 0;
-  done = false; // Faccio ripartire la procedura di partenza
-}
-
-void timeCalc()
-{
-  cuTime = millis();
-  long rslt = (cuTime - tempTime);
+  Serial.println(cuTime);
+  Serial.println(tempTime);
   long mills = (rslt % 1000);
   long seconds = (rslt / 1000);
   sd = empty + mills; // Creo una stringa che mi serve in caso debba aggiungere uno "0" ai millesimi
@@ -316,12 +314,12 @@ void timeCalc()
 
   if (seconds > 99)
     seconds = 99;
-  if(seconds < 10)
-    si = "0" + seconds;
+  if (seconds < 10)
+    si = "0" + si;
   if (mills < 100)
   {
-    s = "0" + s;
+    sd = "0" + sd;
     if (mills < 10)
-      s = "0" + s; // Aggiungo un altro zero se è minore di 10, tipo "005"
+      sd = "0" + sd; // Aggiungo un altro zero se è minore di 10, tipo "005"
   }
 }
