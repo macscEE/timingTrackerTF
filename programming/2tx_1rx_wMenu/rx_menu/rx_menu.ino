@@ -192,8 +192,18 @@ void sendData()
 
   RF24NetworkHeader header1(nodeTX1); //(nodo destinatario)
   RF24NetworkHeader header2(nodeTX2); //(nodo destinatario)
-  network.write(header1, &startSend, sizeof(startSend));
-  network.write(header2, &startSend, sizeof(startSend));
+  if (count == 0) //Uso solo una fotocellula
+  {
+    if (foto == 0)
+      network.write(header1, &startSend, sizeof(startSend));
+    if (foto == 1)
+      network.write(header2, &startSend, sizeof(startSend));
+  }
+  else  //Uso solo due fotocellule
+  {
+    network.write(header1, &startSend, sizeof(startSend));
+    network.write(header2, &startSend, sizeof(startSend));
+  }
 }
 
 void radioReading()
@@ -210,11 +220,9 @@ void getTime()
 {
   switch (dataReceived)
   {
-    case 1:
-      t1();
+    case 1: t1();
       break;
-    case 2:
-      t2();
+    case 2: t2();
       break;
   }
 }
@@ -240,7 +248,7 @@ void t1()
       {
         //Aspetto che venga premuto il pulsante
       }
-
+      dataReceived = 0;
       done = false; // Riazzero la procedura dato che devo prendere solo un tempo
       lcd.clear();
       lcd.setCursor(0, 0);
@@ -286,6 +294,7 @@ void t2()
       lcd.print("Premere START");
       lcd.setCursor(0, 1);
       lcd.print("per iniziare");
+      dataReceived = 0;
       done = false; // Riazzero la procedura dato che devo prendere solo un tempo
     }
   }
