@@ -7,13 +7,16 @@
 #include <RF24Network.h>
 #include <LiquidCrystal_I2C.h>
 
-#define startButton 2
+//For NRF24L01
 #define CE_PIN 9
 #define CSN_PIN 10
 
 // For LCD
 #define buttonSCOR 3
 #define buttonOK 4
+
+#define startButton 2
+#define soundStart 5
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
@@ -148,7 +151,7 @@ void setup()
   lcd.print("per iniziare");
 }
 
-//=============
+//===========================================================================================
 
 void loop()
 {
@@ -156,7 +159,19 @@ void loop()
   {
     if (digitalRead(startButton) == LOW)
     {
+      Serial.println("Pronti..");
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Pronti..");
+      digitalWrite(soundStart, HIGH);
+      delay(300);
+      digitalWrite(soundStart, LOW);
+      int wait = random(2000, 3500); //persona ora sul "pronti"
+      delay(wait);  //attesa in millisecondi
+      digitalWrite(soundStart, HIGH);  //segnalo con il led lo sparo
       inTime = millis();
+      delay(300);
+      digitalWrite(soundStart, LOW);
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Acquisisco..");
@@ -168,7 +183,7 @@ void loop()
   radioReading();
   getTime();
 }
-
+//===========================================================================================
 // Funzioni di appoggio
 
 void oneTime()
@@ -300,10 +315,46 @@ void t2()
   }
   else
   {
+    String t1si = si;
+    String t1sd = sd;
     timeCalc(cuTime);
     Serial.println("Tempo 2° parz.: " + si + "." + sd);
+    lcd.setCursor(0, 1);
+    lcd.print("T2: " + si + "." + sd);
+    String t2si = si;
+    String t2sd = sd;
     timeCalc(inTime);
     Serial.println("Totale: " + si + "." + sd);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Totale: " + si + "." + sd);
+    int temp = 0; //variabile di conteggio temporaneo
+    while (digitalRead(buttonOK) == HIGH)
+    {
+      if (digitalRead(buttonOK) == LOW)
+      {
+        temp++;
+        lcd.clear();
+      }
+      if (temp == 2)
+        temp = 0;
+
+      if (temp == 0)
+      {
+        lcd.setCursor(0, 0);
+        lcd.print("T1: " + t1si + "." + t1sd);
+        lcd.setCursor(0, 1);
+        lcd.print("T1: " + t2si + "." + t2sd);
+      }
+
+      if (temp == 1)
+      {
+        lcd.setCursor(0, 0);
+        lcd.print("Totale: " + si + "." + sd);
+        lcd.setCursor(0,1);
+        lcd.print("OK per reset");
+      }
+    }
     //tempTime = cuTime;
     dataReceived = 0;
     done = false; // Faccio ripartire la procedura di partenza
@@ -314,8 +365,6 @@ void timeCalc(long tempTime)
 {
   cuTime = millis();
   long rslt = (cuTime - tempTime);
-  Serial.println(cuTime);
-  Serial.println(tempTime);
   long mills = (rslt % 1000);
   long seconds = (rslt / 1000);
   sd = empty + mills; // Creo una stringa che mi serve in caso debba aggiungere uno "0" ai millesimi
