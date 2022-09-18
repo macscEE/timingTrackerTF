@@ -315,23 +315,16 @@ void t2()
   }
   else
   {
-    String t1si = si;
-    String t1sd = sd;
-    timeCalc(cuTime);
-    Serial.println("Tempo 2° parz.: " + si + "." + sd);
-    lcd.setCursor(0, 1);
-    lcd.print("T2: " + si + "." + sd);
-    String t2si = si;
-    String t2sd = sd;
-    timeCalc(inTime);
-    Serial.println("Totale: " + si + "." + sd);
     lcd.clear();
     lcd.setCursor(0, 0);
+    Serial.println("Tempo 2° parz.: " + si + "." + sd);
     lcd.print("Totale: " + si + "." + sd);
-    int temp = 0; //variabile di conteggio temporaneo
+    Serial.println("Totale: " + si + "." + sd);
+    int temp = -1; //variabile di conteggio temporaneo
+    
     while (digitalRead(buttonOK) == HIGH)
     {
-      if (digitalRead(buttonOK) == LOW)
+      if (digitalRead(buttonSCOR) == LOW)
       {
         temp++;
         lcd.clear();
@@ -344,7 +337,7 @@ void t2()
         lcd.setCursor(0, 0);
         lcd.print("T1: " + t1si + "." + t1sd);
         lcd.setCursor(0, 1);
-        lcd.print("T1: " + t2si + "." + t2sd);
+        lcd.print("T2: " + t2si + "." + t2sd);
       }
 
       if (temp == 1)
@@ -361,6 +354,9 @@ void t2()
   }
 }
 
+
+int t1i, t1d, t2i, t2d, ti, td;
+String 
 void timeCalc(long tempTime)
 {
   cuTime = millis();
