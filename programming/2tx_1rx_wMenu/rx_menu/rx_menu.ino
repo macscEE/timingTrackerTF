@@ -328,10 +328,10 @@ void t2()
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Totale: " + si + "." + sd);
-    int temp = 0; //variabile di conteggio temporaneo
+    int temp = -1; //variabile di conteggio temporaneo
     while (digitalRead(buttonOK) == HIGH)
     {
-      if (digitalRead(buttonOK) == LOW)
+      if (digitalRead(buttonSCOR) == LOW)
       {
         temp++;
         lcd.clear();
@@ -344,7 +344,7 @@ void t2()
         lcd.setCursor(0, 0);
         lcd.print("T1: " + t1si + "." + t1sd);
         lcd.setCursor(0, 1);
-        lcd.print("T1: " + t2si + "." + t2sd);
+        lcd.print("T2: " + t2si + "." + t2sd);
       }
 
       if (temp == 1)
@@ -361,9 +361,17 @@ void t2()
   }
 }
 
+int savedCuTime;
 void timeCalc(long tempTime)
 {
-  cuTime = millis();
+  if(count == 0 and dataReceived == 2)
+  {
+     cuTime = savedCuTime;
+  }
+   else
+  {
+     cuTime = millis();
+  }
   long rslt = (cuTime - tempTime);
   long mills = (rslt % 1000);
   long seconds = (rslt / 1000);
@@ -380,4 +388,8 @@ void timeCalc(long tempTime)
     if (mills < 10)
       sd = "0" + sd; // Aggiungo un altro zero se è minore di 10, tipo "005"
   }
+   
+   if(count == 0 and dataReceived == 1)
+      savedCuTime = cuTime;
+   
 }
