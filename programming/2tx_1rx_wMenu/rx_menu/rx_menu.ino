@@ -354,6 +354,7 @@ void t2()
 
     lcd.clear();
     lcd.setCursor(0, 0);
+
     lcd.print("Totale: " + tsi + "." + tsd);
     lcd.setCursor(0, 1);
     lcd.print("SCOR per T1, T2");
@@ -361,7 +362,7 @@ void t2()
     calcT2();
 
     int temp = -1; //variabile di conteggio temporaneo
-
+    
     while (digitalRead(buttonOK) == HIGH)
     {
       if (digitalRead(buttonSCOR) == LOW)
@@ -407,11 +408,11 @@ void t2()
   }
 }
 
-
 void timeCalc()
 {
   cuTime = millis();
   long rslt = (cuTime - inTime);
+
   long mills = (rslt % 1000);
   long seconds = (rslt / 1000);
   sd = empty + mills; // Creo una stringa che mi serve in caso debba aggiungere uno "0" ai millesimi
@@ -483,5 +484,5 @@ void calcT2()
     t2sd = "0" + t2sd;
     if (t2d < 10)
       t2sd = "0" + t2sd; // Aggiungo un altro zero se è minore di 10, tipo "005"
-  }
+  }  
 }
