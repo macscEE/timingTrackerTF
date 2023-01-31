@@ -26,6 +26,7 @@ void setup()
   radio.begin();
   network.begin(124, nodeTX2);
   radio.setDataRate(RF24_250KBPS);
+  radio.setPALevel(RF24_PA_LOW);
 }
 
 //====================

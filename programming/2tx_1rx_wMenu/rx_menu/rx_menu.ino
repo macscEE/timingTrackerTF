@@ -49,6 +49,7 @@ void setup()
   radio.begin();
   network.begin(124, nodeRX); // canale, indirizzo nodo
   radio.setDataRate(RF24_250KBPS);
+  radio.setPALevel(RF24_PA_LOW);
 
   pinMode(startButton, INPUT);
   pinMode(soundStart, OUTPUT);
